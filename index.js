@@ -29,4 +29,19 @@ app.get('/assets', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
+// Rota para cadastrar um novo ativo (A-001) 
+app.post('/assets', async (req, res) => {
+  const schema = req.headers['x-tenant-schema'];
+  const { name, type, tag } = req.body;
+  
+  try {
+    const result = await pool.query(
+      `INSERT INTO ${schema}.assets (name, type, tag, status) VALUES ($1, $2, $3, $4) RETURNING *`,
+      [name, type, tag, 'available']
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
